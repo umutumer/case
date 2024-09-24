@@ -136,8 +136,8 @@ app.put('/api/users/:id/flights', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-mongoose.connect('mongodb+srv://utumer:K9gyZ75HmPdwWci8@case.9wfmv.mongodb.net/?retryWrites=true&w=majority&appName=case')
+//Projeyi çalıştırdığınızda kendi mongodb bağlantınızı ekleyebilirsiniz.
+mongoose.connect('')
   .then(() => {
     console.log('Connected to DataBase!');
   })
