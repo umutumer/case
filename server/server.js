@@ -5,6 +5,8 @@ const port = 3001;
 const cors = require("cors");
 const mongoose = require('mongoose');
 const User = require('./models/User.model.js')
+const bcrypt = require('bcrypt');
+
 app.use(cors());
 app.use(express.json());
 
@@ -48,15 +50,42 @@ app.get('/api/users', async (req,res) =>{
     res.status(500).json({message: error.message})
   }
 })
-app.post('/api/users/register', async (req,res) =>{
+app.get('/api/users/:id', async (req, res) => {
   try {
-   const user = await User.create(req.body);
-   res.status(200).json(user);
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({message: error.message})
+    res.status(500).json({ message: error.message });
   }
 });
-app.post('/login', async (req, res) => {
+
+app.post('/api/users/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Şifreyi manuel olarak hashle
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword // Hashlenmiş şifreyi kaydet
+    });
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    console.log(error);
+  }
+});
+
+app.post('/api/users/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -78,9 +107,10 @@ app.post('/login', async (req, res) => {
       res.status(500).json({ message: "Login failed" });
   }
 });
-app.put('/users/:id/flights', async (req, res) => {
+
+app.put('/api/users/:id/flights', async (req, res) => {
   const userId = req.params.id;
-  const newFlight = req.body.flight;
+  const newFlight = req.body;
 
   if (!newFlight) {
       return res.status(400).json({ message: "New flight data is required" });
@@ -89,7 +119,7 @@ app.put('/users/:id/flights', async (req, res) => {
   try {
       const updatedUser = await User.findByIdAndUpdate(
           userId,
-          { $push: { myFlights: newFlight } }, // $push operatörü diziyi günceller
+          { $push: { myFlights: newFlight } },
           { new: true }
       );
 
@@ -101,31 +131,6 @@ app.put('/users/:id/flights', async (req, res) => {
   } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error updating user flights" });
-  }
-});
-app.put('/users/:id/flights/remove', async (req, res) => {
-  const userId = req.params.id;
-  const flightToRemove = req.body.flight;
-
-  if (!flightToRemove) {
-      return res.status(400).json({ message: "Flight data to remove is required" });
-  }
-
-  try {
-      const updatedUser = await User.findByIdAndUpdate(
-          userId,
-          { $pull: { myFlights: flightToRemove } }, // $pull operatörü ile veriyi diziden çıkarıyoruz
-          { new: true }
-      );
-
-      if (!updatedUser) {
-          return res.status(404).json({ message: "User not found" });
-      }
-
-      res.status(200).json(updatedUser);
-  } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error removing flight from user" });
   }
 });
 app.listen(port, () => {
