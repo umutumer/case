@@ -14,7 +14,8 @@ Bu projede kullanıcı, kayıt olup giriş yaptıktan sonra ekranda gördüğü 
 
 1. Proje ana dizininde terminali açın.
 2. `npm install` komutunu çalıştırarak gerekli bağımlılıkları indirin.
-3. `npm start` komutunu çalıştırarak frontend'i başlatın.
+3. Kendi mongo db bağlantınızı ekleyin.
+4. `npm start` komutunu çalıştırarak frontend'i başlatın.
 
 ## Ekran Görüntüleri
 
